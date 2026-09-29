@@ -1,5 +1,7 @@
-import from .frontend { app as ClientApp }
+import ".styles.global.css";
+import from "@jac/runtime" { Router, Routes, Route }
+import from .components.AccessibilityAudit { AccessibilityAudit }
 
 def:pub app() -> JsxElement {
-    return <ClientApp />;
+    return <Router><Routes><Route path="/" element={<AccessibilityAudit />} /></Routes></Router>;
 }
