@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "AriaJac Accessibility Assistant",
+  "version": "0.1.0",
+  "description": "A lightweight shell for AriaJac webpage communication.",
+  "permissions": ["activeTab"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Open AriaJac",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["shared/message-contract.js", "content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AriaJac</title>
+  <style>
+    :root { color-scheme: light; font: 14px/1.5 system-ui, sans-serif; color: #17211d; background: #f6f8f6; }
+    body { width: 320px; margin: 0; padding: 20px; box-sizing: border-box; }
+    header { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+    .mark { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; color: white; background: #087b56; font-weight: 700; }
+    h1 { margin: 0; font-size: 17px; letter-spacing: -.02em; }
+    .subtitle { margin: 1px 0 0; color: #617068; font-size: 12px; }
+    .panel { padding: 14px; border: 1px solid #dce5df; border-radius: 12px; background: white; }
+    .panel p { margin: 0 0 12px; color: #56645c; }
+    button { width: 100%; min-height: 40px; border: 0; border-radius: 9px; background: #087b56; color: white; font: inherit; font-weight: 600; cursor: pointer; }
+    button:focus-visible { outline: 3px solid #86cdb1; outline-offset: 2px; }
+    button:disabled { cursor: wait; opacity: .65; }
+    #status { min-height: 22px; margin: 12px 0 0; overflow-wrap: anywhere; color: #34463c; font-size: 12px; }
+    #status[data-state="error"] { color: #a12b2b; }
+  </style>
+</head>
+<body>
+  <header><div class="mark" aria-hidden="true">A</div><div><h1>AriaJac</h1><p class="subtitle">Accessibility assistant shell</p></div></header>
+  <main class="panel">
+    <p>Check that AriaJac can reach the current webpage.</p>
+    <button id="check-page" type="button">Check page connection</button>
+    <p id="status" role="status" aria-live="polite">Ready to connect.</p>
+  </main>
+  <script src="shared/message-contract.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,38 +1,53 @@
-# Empty
+# AriaJac
 
-A blank canvas — the minimal jac-shadcn starter the other templates are built on.
+AriaJac is a Jac-based accessibility assistant prototype with a separate Chrome Manifest V3 communication shell. The current extension only verifies popup → service worker → content script → webpage messaging. It does not analyze accessibility or modify the page.
 
-One client page, the violet theme wired up, and nothing else in the way. Start
-here when none of the other templates fit, and describe what you want to build.
+## Project areas
 
-## What you get
+- `main.jac` and `components/`: existing Jac web dashboard.
+- `extension/`: unpacked Chrome extension shell.
+- `engine/`: separate Jac engine module boundary (`PageSnapshot`, `AuditSession`, and an explicit unimplemented walker registry).
 
-- `main.jac` — a `cl { }` block with a single `def:pub app()` page (a centered
-  card). This is the whole app.
-- `components/ui/` — the two jac-shadcn primitives (`Button`, `Card`) the page
-  uses. Add more with `jac add --shadcn <name>`.
-- `styles/global.css` — semantic design tokens and the theme, already wired up.
-- `lib/utils.jac` — `cn()` for merging class names.
+## Local development and checks
 
-## Run it
+From the project root, install project dependencies and run the web dashboard:
 
-```bash
+```sh
 jac install
-jac start --dev
+jac start --dev main.jac
 ```
 
-Open <http://localhost:8000>.
+Check the Jac web app and Jac engine entry point:
 
-## Where to go next
+```sh
+jac check main.jac engine/main.jac
+jac run engine/main.jac
+```
 
-- **Add a page / routing** — create a `pages/` directory; files become routes
-  by convention. See `jac guide jac-cl-routing`.
-- **Add a backend** — create `services/foo.sv.jac` with `def:pub` functions;
-  each becomes a `POST /function/<name>` REST endpoint automatically, and data
-  hung off `root` persists with no database to set up (Jac stores the graph for
-  you — SQLite in `.jac/data/` by default, MongoDB via `MONGODB_URI`). See
-  `jac guide jac-sv-endpoints` and `jac guide jac-sv-persistence`.
-- **Add auth** — see `jac guide jac-sv-auth` and `jac guide jac-cl-auth`.
+Run the deterministic message-flow harness with Node.js (no browser or npm packages needed):
 
-`AGENTS.md` lists the reference guides bundled with the compiler; read them
-before writing Jac — the syntax is easy to confuse with Python or JSX.
+```sh
+node extension/tests/message-flow.test.js
+```
+
+Validate the extension manifest JSON:
+
+```sh
+node -e "JSON.parse(require('node:fs').readFileSync('extension/manifest.json', 'utf8')); console.log('Manifest JSON is valid')"
+```
+
+## Load unpacked in Chrome
+
+1. Open `chrome://extensions` in Chrome.
+2. Enable **Developer mode**.
+3. Choose **Load unpacked** and select this project's `extension/` directory.
+4. Open an ordinary webpage (Chrome internal pages and some restricted pages do not allow extensions).
+5. Open the AriaJac extension popup and choose **Check page connection**. The popup should display the page title and URL returned by the content script.
+
+The extension needs the `activeTab` permission for the user-invoked active-tab query and uses a content script on pages matching `<all_urls>`. Chrome may refuse content script execution on restricted browser pages; refresh an ordinary page after loading or reloading the extension.
+
+## Build/package
+
+The extension is plain JavaScript and JSON; there is no bundler step. Load `extension/` directly as an unpacked extension or zip that folder for local sharing. The Jac engine is an independent Jac module set and is not bundled into the Chrome extension in this milestone.
+
+No API keys or other secrets are required or included.
