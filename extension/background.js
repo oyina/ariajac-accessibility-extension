@@ -1,8 +1,8 @@
-importScripts("shared/message-contract.js", "shared/dom-snapshot.js", "shared/audit-engine.js");
+importScripts("shared/message-contract.js", "shared/dom-snapshot.js", "shared/audit-engine.js", "shared/api-config.js");
 
 (() => {
   const { MESSAGE_TYPE, ERROR_TYPE } = globalThis.AriaMessage;
-  const JAC_ENDPOINT = "http://localhost:8001/function/ingest_snapshot_and_audit";
+  const JAC_ENDPOINT = globalThis.AriaApiConfig.baseUrl + globalThis.AriaApiConfig.auditPath;
 
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (!message) return false;

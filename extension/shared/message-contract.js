@@ -4,7 +4,7 @@
   const ERROR_TYPE = "ARIAJAC_MESSAGE_ERROR";
   const HIGHLIGHT_TYPE = "ARIAJAC_HIGHLIGHT";
 
-  const contract = Object.freeze({ MESSAGE_TYPE, RESPONSE_TYPE, ERROR_TYPE });
+  const contract = Object.freeze({ MESSAGE_TYPE, RESPONSE_TYPE, ERROR_TYPE, HIGHLIGHT_TYPE });
   globalThis.AriaMessage = contract;
   if (typeof module !== "undefined" && module.exports) module.exports = contract;
 })();
