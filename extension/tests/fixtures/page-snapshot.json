@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "snapshotId": "fixture-v1",
+  "page": {
+    "id": "page-https://example.test/fixture",
+    "title": "Accessible Example",
+    "url": "https://example.test/fixture",
+    "role": "page"
+  },
+  "elements": [
+    {"id":"el-main","tag":"main","role":"main","text":"Example","accessibleName":"Example","alt":"","href":null,"visible":true,"interactive":false,"bounds":{"width":640,"height":480},"foreground":"rgb(20, 20, 20)","background":"rgb(255, 255, 255)","animation":null,"focusable":false,"parentId":null},
+    {"id":"el-main>h1","tag":"h1","role":"heading","text":"Example","accessibleName":"Example","alt":"","href":null,"visible":true,"interactive":false,"bounds":{"width":240,"height":44},"foreground":"rgb(20, 20, 20)","background":"rgba(0, 0, 0, 0)","animation":null,"focusable":false,"parentId":"el-main"},
+    {"id":"el-main>p","tag":"p","role":"paragraph","text":"Read this introduction.","accessibleName":"Read this introduction.","alt":"","href":null,"visible":true,"interactive":false,"bounds":{"width":320,"height":24},"foreground":"rgb(30, 30, 30)","background":"rgba(0, 0, 0, 0)","animation":null,"focusable":false,"parentId":"el-main"},
+    {"id":"el-main>img","tag":"img","role":"img","text":"","accessibleName":"A mountain at sunrise","alt":"A mountain at sunrise","href":null,"visible":true,"interactive":false,"bounds":{"width":240,"height":160},"foreground":"rgb(0, 0, 0)","background":"rgba(0, 0, 0, 0)","animation":null,"focusable":false,"parentId":"el-main"},
+    {"id":"el-main>button","tag":"button","role":"button","text":"Continue","accessibleName":"Continue","alt":"","href":null,"visible":true,"interactive":true,"bounds":{"width":120,"height":40},"foreground":"rgb(255, 255, 255)","background":"rgb(0, 80, 40)","animation":null,"focusable":true,"parentId":"el-main"},
+    {"id":"el-main>a","tag":"a","role":"link","text":"Visit details","accessibleName":"Visit details","alt":"","href":"https://example.test/details","visible":true,"interactive":true,"bounds":{"width":100,"height":22},"foreground":"rgb(0, 60, 120)","background":"rgba(0, 0, 0, 0)","animation":null,"focusable":true,"parentId":"el-main"},
+    {"id":"el-main>form","tag":"form","role":"form","text":"Email","accessibleName":"Email","alt":"","href":null,"visible":true,"interactive":false,"bounds":{"width":280,"height":90},"foreground":"rgb(20, 20, 20)","background":"rgba(0, 0, 0, 0)","animation":null,"focusable":false,"parentId":"el-main"},
+    {"id":"el-main>form>input","tag":"input","role":"textbox","text":"","accessibleName":"Email address","alt":"","href":null,"visible":true,"interactive":true,"bounds":{"width":240,"height":36},"foreground":"rgb(20, 20, 20)","background":"rgb(255, 255, 255)","animation":null,"focusable":true,"parentId":"el-main>form"}
+  ],
+  "relationships": [
+    {"sourceId":"page-https://example.test/fixture","targetId":"el-main","kind":"contains"},
+    {"sourceId":"el-main","targetId":"el-main>h1","kind":"contains"},
+    {"sourceId":"el-main","targetId":"el-main>p","kind":"contains"},
+    {"sourceId":"el-main","targetId":"el-main>img","kind":"contains"},
+    {"sourceId":"el-main","targetId":"el-main>button","kind":"contains"},
+    {"sourceId":"el-main","targetId":"el-main>a","kind":"contains"},
+    {"sourceId":"el-main","targetId":"el-main>form","kind":"contains"},
+    {"sourceId":"el-main>form","targetId":"el-main>form>input","kind":"contains"}
+  ]
+}

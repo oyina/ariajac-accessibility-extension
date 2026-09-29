@@ -18,6 +18,10 @@
     button:disabled { cursor: wait; opacity: .65; }
     #status { min-height: 22px; margin: 12px 0 0; overflow-wrap: anywhere; color: #34463c; font-size: 12px; }
     #status[data-state="error"] { color: #a12b2b; }
+    .graph { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; padding-top: 10px; border-top: 1px solid #e8eee9; }
+    .graph span { color: #617068; font-size: 12px; }
+    .graph strong { font-variant-numeric: tabular-nums; font-size: 12px; }
+    #changes { margin: 10px 0 0; color: #617068; font-size: 11px; }
   </style>
 </head>
 <body>
@@ -26,8 +30,16 @@
     <p>Check that AriaJac can reach the current webpage.</p>
     <button id="check-page" type="button">Check page connection</button>
     <p id="status" role="status" aria-live="polite">Checking the current page…</p>
+    <section id="graph" class="graph" aria-label="Current page graph" hidden>
+      <span>Page nodes</span><strong id="page-count">0</strong>
+      <span>Element nodes</span><strong id="element-count">0</strong>
+      <span>Relationships</span><strong id="relationship-count">0</strong>
+      <span>Graph size</span><strong id="graph-size">0</strong>
+    </section>
+    <p id="changes"></p>
   </main>
   <script src="shared/message-contract.js"></script>
+  <script src="shared/dom-snapshot.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

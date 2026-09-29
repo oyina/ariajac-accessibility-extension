@@ -1,6 +1,6 @@
-import from engine.graph { PageSnapshot }
+import from engine.graph { Page }
 
 obj AuditSession {
-    has page: PageSnapshot;
+    has page: Page;
     has status: str = "idle";
 }

@@ -1,30 +1,30 @@
-importScripts("shared/message-contract.js");
+importScripts("shared/message-contract.js", "shared/dom-snapshot.js");
 
 (() => {
   const { MESSAGE_TYPE, ERROR_TYPE } = globalThis.AriaMessage;
 
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (!message || message.type !== MESSAGE_TYPE) return false;
-
-    const tabId = message.tabId;
-    if (!Number.isInteger(tabId)) {
+    if (!Number.isInteger(message.tabId)) {
       sendResponse({ type: ERROR_TYPE, ok: false, error: "No active webpage is available." });
       return false;
     }
-
-    chrome.tabs.sendMessage(tabId, { type: MESSAGE_TYPE }, (response) => {
+    chrome.tabs.sendMessage(message.tabId, { type: MESSAGE_TYPE }, (response) => {
       const lastError = chrome.runtime.lastError;
       if (lastError) {
-        sendResponse({
-          type: ERROR_TYPE,
-          ok: false,
-          error: "The page did not respond. Try refreshing the webpage, then retry.",
-        });
+        sendResponse({ type: ERROR_TYPE, ok: false, error: "No page snapshot received. Refresh the page and try again." });
         return;
       }
-      sendResponse(response || { type: ERROR_TYPE, ok: false, error: "The page returned no response." });
+      if (!response || !response.ok) {
+        sendResponse(response || { type: ERROR_TYPE, ok: false, error: "The webpage returned no snapshot." });
+        return;
+      }
+      if (JSON.stringify(response.snapshot).length > 500000) {
+        sendResponse({ type: ERROR_TYPE, ok: false, error: "Snapshot was larger than the allowed transfer size." });
+        return;
+      }
+      sendResponse(response);
     });
-
     return true;
   });
 })();
