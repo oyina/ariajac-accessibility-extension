@@ -3,7 +3,7 @@
   const button = document.querySelector("#check-page");
   const status = document.querySelector("#status");
 
-  button.addEventListener("click", async () => {
+  async function checkActivePage() {
     button.disabled = true;
     status.dataset.state = "loading";
     status.textContent = "Checking the current webpage…";
@@ -14,6 +14,7 @@
 
       const response = await chrome.runtime.sendMessage({ type: MESSAGE_TYPE, tabId: tab.id });
       if (!response || !response.ok) throw new Error(response?.error || "The page did not respond.");
+      if (!response.page?.title || !response.page?.url) throw new Error("The page responded with incomplete connection details.");
 
       status.dataset.state = "success";
       status.textContent = `Connected: ${response.page.title} (${response.page.url})`;
@@ -23,5 +24,8 @@
     } finally {
       button.disabled = false;
     }
-  });
+  }
+
+  button.addEventListener("click", checkActivePage);
+  checkActivePage();
 })();

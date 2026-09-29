@@ -1,3 +1,5 @@
+importScripts("shared/message-contract.js");
+
 (() => {
   const { MESSAGE_TYPE, ERROR_TYPE } = globalThis.AriaMessage;
 

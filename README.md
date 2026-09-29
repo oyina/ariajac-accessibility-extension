@@ -48,17 +48,19 @@ node -e "JSON.parse(require('node:fs').readFileSync('extension/manifest.json', '
 2. Enable **Developer mode**.
 3. Choose **Load unpacked** and select this project's `extension/`
    directory.
-4. Open an ordinary webpage (Chrome internal pages and some restricted
-   pages do not allow extensions).
-5. Open the AriaJac extension popup and choose **Check page
-   connection**. The popup should display the page title and URL
-   returned by the content script.
+4. Open or refresh an ordinary webpage (Chrome internal pages and some
+   restricted pages do not allow extensions).
+5. Open the AriaJac extension popup. It checks the current page
+   automatically; **Check page connection** retries the check. A
+   successful response shows **Connected** plus the page title and URL.
+   If it cannot connect, the popup shows an error message with the next
+   step.
 
-The extension needs the `activeTab` permission for the user-invoked
-active-tab query and uses a content script on pages matching
-`<all_urls>`. Chrome may refuse content script execution on restricted
-browser pages; refresh an ordinary page after loading or reloading the
-extension.
+After changing extension files, return to `chrome://extensions`, click
+**Reload** on AriaJac, and refresh the webpage before reopening the
+popup. Chrome may refuse content scripts on restricted browser pages.
+The extension uses the `activeTab` permission for the user-invoked
+active-tab query and a content script on pages matching `<all_urls>`.
 
 ## Build/package
 

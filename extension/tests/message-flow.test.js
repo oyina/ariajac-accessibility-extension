@@ -48,10 +48,15 @@ const context = vm.createContext({
   console,
 });
 context.globalThis = context;
-
-for (const file of ["shared/message-contract.js", "content.js", "background.js", "popup.js"]) {
+function runFile(file) {
   vm.runInContext(fs.readFileSync(path.join(extensionRoot, file), "utf8"), context, { filename: file });
 }
+context.importScripts = (...files) => files.forEach((file) => runFile(file));
+
+runFile("shared/message-contract.js");
+runFile("content.js");
+runFile("background.js");
+runFile("popup.js");
 
 (async () => {
   await button.onClick();
