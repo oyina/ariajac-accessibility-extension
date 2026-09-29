@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "A lightweight shell for AriaJac webpage communication.",
   "permissions": ["activeTab"],
-  "host_permissions": ["http://localhost:8000/*"],
+  "host_permissions": ["http://localhost:8001/*"],
   "background": {
     "service_worker": "background.js"
   },

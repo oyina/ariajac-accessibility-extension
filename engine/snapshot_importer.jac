@@ -33,14 +33,14 @@ def:pub ingest_snapshot(snapshot: dict) -> GraphUpdate {
     modifications: list[str] = [];
     seen: list[str] = [];
     element_data = snapshot["elements"] as list[dict];
+
+    # Pass one creates or updates every node before relationships are resolved.
     for record in element_data {
         element_id = record["id"] as str;
         seen = seen + [element_id];
         matches: list[Element] = [];
         for candidate in [root -->][?:Element] {
-            if candidate.page_url == page_url and candidate.element_id == element_id {
-                matches = matches + [candidate];
-            }
+            if candidate.page_url == page_url and candidate.element_id == element_id { matches = matches + [candidate]; }
         }
         if len(matches) == 0 {
             element = Element(
@@ -49,9 +49,6 @@ def:pub ingest_snapshot(snapshot: dict) -> GraphUpdate {
                 tag=record["tag"] as str,
                 role=record["role"] as str,
                 heading_level=record["headingLevel"] as int or 0,
-                media_controls=((record["media"] as dict)["controls"] as bool) if record["media"] else False,
-                media_autoplay=((record["media"] as dict)["autoplay"] as bool) if record["media"] else False,
-                media_muted=((record["media"] as dict)["muted"] as bool) if record["media"] else False,
                 contrast_ratio=record["contrastRatio"] as float or 0.0,
                 has_form_label=record["hasFormLabel"] as bool,
                 text=record["text"] as str,
@@ -71,15 +68,12 @@ def:pub ingest_snapshot(snapshot: dict) -> GraphUpdate {
             additions = additions + [element_id];
         } else {
             element = matches[0];
-            if element.text != (record["text"] as str) or element.accessible_name != (record["accessibleName"] as str) or element.alt != (record["alt"] as str) or element.href != (record["href"] as str or "") or element.width != ((record["bounds"] as dict)["width"] as int) or element.height != ((record["bounds"] as dict)["height"] as int) {
+            if element.text != (record["text"] as str) or element.accessible_name != (record["accessibleName"] as str) or element.alt != (record["alt"] as str) or element.href != (record["href"] as str or "") or element.width != ((record["bounds"] as dict)["width"] as int) or element.height != ((record["bounds"] as dict)["height"] as int) or element.contrast_ratio != (record["contrastRatio"] as float or 0.0) or element.has_form_label != (record["hasFormLabel"] as bool) {
                 modifications = modifications + [element_id];
             }
             element.tag = record["tag"] as str;
             element.role = record["role"] as str;
             element.heading_level = record["headingLevel"] as int or 0;
-            element.media_controls = ((record["media"] as dict)["controls"] as bool) if record["media"] else False;
-            element.media_autoplay = ((record["media"] as dict)["autoplay"] as bool) if record["media"] else False;
-            element.media_muted = ((record["media"] as dict)["muted"] as bool) if record["media"] else False;
             element.contrast_ratio = record["contrastRatio"] as float or 0.0;
             element.has_form_label = record["hasFormLabel"] as bool;
             element.text = record["text"] as str;
@@ -95,30 +89,40 @@ def:pub ingest_snapshot(snapshot: dict) -> GraphUpdate {
             element.animation = record["animation"] as str or "";
             element.focusable = record["focusable"] as bool;
         }
+    }
+
+    # Pass two resolves containment independently of snapshot ordering.
+    for record in element_data {
+        element_id = record["id"] as str;
         parent_id = record["parentId"] as str;
-        parent_matches: list[Element] = [];
-        for parent_candidate in [root -->][?:Element] {
-            if parent_candidate.page_url == page_url and parent_candidate.element_id == parent_id {
-                parent_matches = parent_matches + [parent_candidate];
+        matching_elements: list[Element] = [];
+        for candidate in [root -->][?:Element] {
+            if candidate.page_url == page_url and candidate.element_id == element_id { matching_elements = matching_elements + [candidate]; }
+        }
+        matching_parents: list[Element] = [];
+        if parent_id != "" {
+            for candidate in [root -->][?:Element] {
+                if candidate.page_url == page_url and candidate.element_id == parent_id { matching_parents = matching_parents + [candidate]; }
             }
         }
-        if parent_id == "" or len(parent_matches) == 0 {
-            attached = [page ->:HasElement:->];
-            if element not in attached { page +>:HasElement:+> element; }
-        } else {
-            parent_element = parent_matches[0];
-            attached_children = [parent_element ->:ContainsElement:->];
-            if element not in attached_children { parent_element +>:ContainsElement:+> element; }
+        if len(matching_elements) > 0 {
+            element = matching_elements[0];
+            if len(matching_parents) == 0 {
+                attached_pages = [page ->:HasElement:->];
+                if element not in attached_pages { page +>:HasElement:+> element; }
+            } else {
+                parent_element = matching_parents[0];
+                attached_children = [parent_element ->:ContainsElement:->];
+                if element not in attached_children { parent_element +>:ContainsElement:+> element; }
+            }
         }
     }
 
-    previous_elements = [page ->:HasElement:->];
-    for parent_node in previous_elements {
-        previous_children = [parent_node ->:ContainsElement:->];
-        for child_node in previous_children { previous_elements = previous_elements + [child_node]; }
-    }
+    # Stable graph cleanup scope: remove stale direct page children only. Nested
+    # stale descendants are removed with their detached parent when scanned again.
+    existing_direct = [page ->:HasElement:->];
     removals: list[str] = [];
-    for element in previous_elements {
+    for element in existing_direct {
         if element.element_id not in seen {
             removals = removals + [element.element_id];
             del element;
@@ -128,11 +132,13 @@ def:pub ingest_snapshot(snapshot: dict) -> GraphUpdate {
     for candidate in [root -->][?:Element] {
         if candidate.page_url == page_url { current_elements = current_elements + [candidate]; }
     }
+    relationships = len([edge page ->:HasElement:->]);
+    for element in current_elements { relationships += len([edge element ->:ContainsElement:->]); }
     return GraphUpdate(
         snapshot_id=snapshot_id,
         page_count=len([root -->][?:Page]),
         element_count=len(current_elements),
-        relationship_count=len([edge page ->:HasElement:->]) + len([edge page ->:ContainsElement:->]),
+        relationship_count=relationships,
         added=additions,
         removed=removals,
         changed=modifications
