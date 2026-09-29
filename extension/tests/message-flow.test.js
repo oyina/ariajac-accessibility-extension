@@ -6,6 +6,10 @@ const vm = require("node:vm");
 const extensionRoot = path.resolve(__dirname, "..");
 const listeners = { runtime: [], content: [] };
 const button = { disabled: false, addEventListener(_event, callback) { this.onClick = callback; } };
+const applyButton = { addEventListener(_event, callback) { this.onClick = callback; } };
+const undoLastButton = { addEventListener(_event, callback) { this.onClick = callback; } };
+const undoAllButton = { addEventListener(_event, callback) { this.onClick = callback; } };
+const focusModeButton = { value: "false", textContent: "Enable Focus Mode", addEventListener(_event, callback) { this.onClick = callback; }, getAttribute() { return this.value; }, setAttribute(_name, value) { this.value = value; } };
 const status = { textContent: "", dataset: {} };
 const graph = { hidden: true };
 const auditSection = { hidden: true };
@@ -30,6 +34,10 @@ const documentStub = {
     if (selector === "#audit") return auditSection;
     if (selector === "#audit-status") return auditStatus;
     if (selector === "#issues") return issueContainer;
+    if (selector === "#apply-fixes") return applyButton;
+    if (selector === "#undo-last") return undoLastButton;
+    if (selector === "#undo-all") return undoAllButton;
+    if (selector === "#focus-mode") return focusModeButton;
     if (selector === "#headline") return elements.get(selector) || null;
     return counters[selector.slice(1)] || null;
   },
@@ -42,8 +50,11 @@ const html = (tag, attrs = {}, children = []) => ({
   children, innerText: attrs.text || "", textContent: attrs.text || "", value: "",
   id: attrs.id || "", hidden: false, href: attrs.href || "", style: { outline: "", outlineOffset: "" },
   getAttribute(name) { return attrs[name] ?? null; },
+  setAttribute(name, value) { attrs[name] = String(value); },
+  removeAttribute(name) { delete attrs[name]; },
   hasAttribute(name) { return Object.hasOwn(attrs, name); },
   getBoundingClientRect() { return { width: 100, height: 30 }; },
+  querySelector() { return null; },
   closest(selector) {
     const wanted = selector.split(",");
     let current = this;
@@ -68,8 +79,11 @@ const documentPage = {
   location: { href: "https://example.test/path" },
   documentElement: docRoot,
   querySelectorAll() { return all; },
-  createElement(tag) { return { tagName: tag.toUpperCase(), dataset: {}, children: [], addEventListener(_name, cb) { this.onClick = cb; }, append(...items) { this.children.push(...items); } }; },
+  createElement(tag) { return { tagName: tag.toUpperCase(), id: "", textContent: "", classList: { add() {}, remove() {}, contains() { return false; } } }; },
   querySelector(selector) { return elements.get(selector) || null; },
+  head: { appendChild() {} },
+  documentElement: { classList: { add() {}, remove() {}, contains() { return false; } } },
+  getElementById() { return null; },
 };
 for (const el of all) el.ownerDocument = documentPage;
 const style = { display: "block", visibility: "visible", color: "rgb(1, 2, 3)", backgroundColor: "rgb(255, 255, 255)", animationName: "none" };
@@ -100,7 +114,7 @@ documentPage.querySelector = (selector) => documentStub.querySelector(selector) 
 context.importScripts = (...files) => files.forEach((file) => vm.runInContext(fs.readFileSync(path.join(extensionRoot, file), "utf8"), context, { filename: file }));
 context.window = { ...context.window, document: documentPage };
 context.chrome = contentChrome;
-for (const file of ["shared/message-contract.js", "shared/dom-snapshot.js", "shared/audit-engine.js", "content.js"]) {
+for (const file of ["shared/message-contract.js", "shared/dom-snapshot.js", "shared/audit-engine.js", "shared/transformation-engine.js", "content.js"]) {
   vm.runInContext(fs.readFileSync(path.join(extensionRoot, file), "utf8"), context, { filename: file });
 }
 context.chrome = workerChrome;
@@ -128,7 +142,17 @@ vm.runInContext(fs.readFileSync(path.join(extensionRoot, "popup.js"), "utf8"), c
   assert.equal(heading.style.outline, "3px solid #d12b2b");
   const missing = await context.chrome.runtime.sendMessage({ type: context.AriaMessage.HIGHLIGHT_TYPE, tabId: 42, selector: "#missing" });
   assert.equal(missing.ok, false);
-  console.log("PASS extension extraction, repeat-scan diff, local audit response, and element highlighting");
+  const apply = await new Promise((resolve) => listeners.content[0]({ type: "ARIAJAC_APPLY_SAFE_FIXES" }, {}, resolve));
+  assert.equal(apply.ok, true);
+  assert.ok(apply.applied >= 0);
+  const undo = await new Promise((resolve) => listeners.content[0]({ type: "ARIAJAC_UNDO_LAST" }, {}, resolve));
+  assert.equal(undo.ok, true);
+  assert.ok(Number.isInteger(undo.restored));
+  const focus = await new Promise((resolve) => listeners.content[0]({ type: "ARIAJAC_FOCUS_MODE", enabled: true }, {}, resolve));
+  assert.equal(focus.ok, true);
+  const undoAll = await new Promise((resolve) => listeners.content[0]({ type: "ARIAJAC_UNDO_ALL" }, {}, resolve));
+  assert.equal(undoAll.ok, true);
+  console.log("PASS extraction, audit, repeat scan, highlighting, safe-fix apply/undo, and Focus Mode undo");
 })().catch((error) => {
   console.error(error);
   process.exitCode = 1;

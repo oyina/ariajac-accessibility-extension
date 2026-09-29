@@ -30,6 +30,10 @@
     .issue[data-severity="medium"] { border-left: 3px solid #b17a12; }
     .issue[data-severity="low"] { border-left: 3px solid #718078; }
     .issue:focus-visible { outline: 3px solid #86cdb1; outline-offset: 2px; }
+    .repair-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+    .repair-actions button { padding: 7px; font-size: 12px; }
+    .repair-actions .secondary { background: #eef3ef; color: #26372e; border: 1px solid #d8e2db; }
+    .repair-actions .wide { grid-column: 1 / -1; }
   </style>
 </head>
 <body>
@@ -54,6 +58,12 @@
         <span>Low</span><strong id="count-low">0</strong>
       </div>
       <div id="issues" class="issues"></div>
+      <div class="repair-actions" aria-label="Reversible accessibility actions">
+        <button id="apply-fixes" type="button">Apply Safe Fixes</button>
+        <button id="undo-last" type="button" class="secondary">Undo Last Fix</button>
+        <button id="undo-all" type="button" class="secondary">Undo All Fixes</button>
+        <button id="focus-mode" type="button" class="secondary wide" aria-pressed="false">Enable Focus Mode</button>
+      </div>
     </section>
   </main>
   <script src="shared/message-contract.js"></script>

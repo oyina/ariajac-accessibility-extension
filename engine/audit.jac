@@ -25,6 +25,17 @@ node AccessibilityIssue {
     has can_auto_fix: bool = False;
 }
 
+node Transformation {
+    has id: str = "";
+    has issue_id: str = "";
+    has element_id: str = "";
+    has before_state: str = "";
+    has after_state: str = "";
+    has transformation_type: str = "";
+    has reversible: bool = True;
+    has timestamp: str = "";
+}
+
 obj AuditSession {
     has page: Page;
     has status: str = "idle";

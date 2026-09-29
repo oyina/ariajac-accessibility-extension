@@ -3,8 +3,8 @@
 AriaJac is a Jac-based accessibility assistant prototype with a
 separate Chrome Manifest V3 extension. The extension extracts a bounded,
 normalized page snapshot, requests deterministic audit findings, and can
-briefly outline the element tied to a finding. It does not automatically
-repair pages or use an LLM.
+briefly outline the element tied to a finding. It offers limited reversible CSS overrides for selected deterministic
+barriers. It does not use an LLM or permanently remove page content.
 
 ## Project areas
 
@@ -84,6 +84,20 @@ jac check main.jac engine/main.jac engine/snapshot_importer.jac engine/accessibi
 4. Open the AriaJac popup. It scans automatically and displays findings,
    severity counts, the detection source, and element references.
 5. Select a finding to scroll to and temporarily outline its element.
+6. Use **Apply Safe Fixes** for the supported temporary CSS overrides;
+   **Undo Last Fix** and **Undo All Fixes** restore prior marker state.
+7. **Enable Focus Mode** only hides regions explicitly marked
+   `data-ariajac-decorative="true"` or
+   `data-ariajac-unrelated="true"`; regions containing controls or main
+   content are skipped.
+
+Safe fixes apply extension-owned classes and `data-ariajac-repair`
+attributes for measured low contrast, small interactive targets, animation
+metadata, and keyboard focus outline. The page's original inline styles and
+content are not overwritten; overrides live in an injected stylesheet and
+can be undone by removing the extension-owned attributes. Focus Mode is
+manual and conservative; it does not infer that arbitrary sidebars are
+unrelated.
 
 The extractor limits snapshots to 350 visible matching elements and
 bounds text per element. It records selected accessibility properties,

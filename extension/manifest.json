@@ -15,7 +15,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["shared/message-contract.js", "shared/dom-snapshot.js", "shared/audit-engine.js", "content.js"],
+      "js": ["shared/message-contract.js", "shared/dom-snapshot.js", "shared/audit-engine.js", "shared/transformation-engine.js", "content.js"],
       "run_at": "document_idle"
     }
   ]

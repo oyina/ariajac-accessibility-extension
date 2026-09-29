@@ -9,6 +9,13 @@
   const issueList = document.querySelector("#issues");
   let activeTabId = null;
 
+  async function sendPageCommand(type, payload = {}) {
+    if (!Number.isInteger(activeTabId)) throw new Error("Run an audit on an active webpage first.");
+    const result = await chrome.runtime.sendMessage({ type, tabId: activeTabId, ...payload });
+    if (!result || result.ok === false) throw new Error(result?.error || "The page did not respond.");
+    return result;
+  }
+
   function renderAudit(audit) {
     issueList.replaceChildren();
     for (const severity of ["critical", "high", "medium", "low"]) {
@@ -89,6 +96,44 @@
       button.disabled = false;
     }
   }
+
+  const applyButton = document.querySelector("#apply-fixes");
+  const undoLastButton = document.querySelector("#undo-last");
+  const undoAllButton = document.querySelector("#undo-all");
+  const focusModeButton = document.querySelector("#focus-mode");
+
+  applyButton.addEventListener("click", async () => {
+    try {
+      const result = await sendPageCommand("ARIAJAC_APPLY_SAFE_FIXES");
+      auditStatus.textContent = `Applied ${result.applied} reversible safe fix${result.applied === 1 ? "" : "es"}.`;
+      renderAudit(result.audit);
+    } catch (error) { auditStatus.textContent = error.message; }
+  });
+  undoLastButton.addEventListener("click", async () => {
+    try {
+      const result = await sendPageCommand("ARIAJAC_UNDO_LAST");
+      auditStatus.textContent = `Undid the last fix batch; restored ${result.restored} element change${result.restored === 1 ? "" : "s"}.`;
+      renderAudit(result.audit);
+    } catch (error) { auditStatus.textContent = error.message; }
+  });
+  undoAllButton.addEventListener("click", async () => {
+    try {
+      const result = await sendPageCommand("ARIAJAC_UNDO_ALL");
+      focusModeButton.setAttribute("aria-pressed", "false");
+      focusModeButton.textContent = "Enable Focus Mode";
+      auditStatus.textContent = `Undid all fix batches; restored ${result.restored} element change${result.restored === 1 ? "" : "s"}.`;
+      renderAudit(result.audit);
+    } catch (error) { auditStatus.textContent = error.message; }
+  });
+  focusModeButton.addEventListener("click", async () => {
+    const enabled = focusModeButton.getAttribute("aria-pressed") !== "true";
+    try {
+      await sendPageCommand("ARIAJAC_FOCUS_MODE", { enabled });
+      focusModeButton.setAttribute("aria-pressed", String(enabled));
+      focusModeButton.textContent = enabled ? "Disable Focus Mode" : "Enable Focus Mode";
+      auditStatus.textContent = enabled ? "Focus Mode enabled for explicitly marked decorative regions." : "Focus Mode disabled.";
+    } catch (error) { auditStatus.textContent = error.message; }
+  });
 
   button.addEventListener("click", checkActivePage);
   checkActivePage();

@@ -6,7 +6,7 @@ importScripts("shared/message-contract.js", "shared/dom-snapshot.js", "shared/au
 
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (!message) return false;
-    if (message.type === globalThis.AriaMessage.HIGHLIGHT_TYPE) {
+    if (["ARIAJAC_HIGHLIGHT", "ARIAJAC_APPLY_SAFE_FIXES", "ARIAJAC_UNDO_LAST", "ARIAJAC_UNDO_ALL", "ARIAJAC_FOCUS_MODE"].includes(message.type)) {
       if (!Number.isInteger(message.tabId)) {
         sendResponse({ ok: false, error: "No active webpage is available." });
         return false;
