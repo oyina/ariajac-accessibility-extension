@@ -35,8 +35,9 @@
       item.append(title, detail, potential);
       item.addEventListener("click", async () => {
         try {
-          const response = await chrome.tabs.sendMessage(activeTabId, {
+          const response = await chrome.runtime.sendMessage({
             type: HIGHLIGHT_TYPE,
+            tabId: activeTabId,
             selector: issue.selector,
           });
           if (!response?.ok) auditStatus.textContent = response?.error || "Could not identify that element on the page.";

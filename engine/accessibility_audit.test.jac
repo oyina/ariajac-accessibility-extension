@@ -1,6 +1,3 @@
-import from engine.accessibility_audit { ingest_snapshot_and_audit }
-import from engine.audit { AccessibilityIssue }
-
 test "inaccessible fixture yields distinct deterministic findings" {
     snapshot: dict = {
         "snapshotId": "fixture-audit-1",
@@ -13,8 +10,8 @@ test "inaccessible fixture yields distinct deterministic findings" {
         ],
         "relationships": []
     };
-    result = ingest_snapshot_and_audit(snapshot);
-    found: list[AccessibilityIssue] = result.issues;
+    _ = ingest_snapshot(snapshot);
+    found: list[AccessibilityIssue] = audit_page_graph("https://fixture.test/bad");
     assert len(found) >= 4;
     assert len([i for i in found if i.element_id == "bad-image" and i.category == "Semantics"]) > 0;
     assert len([i for i in found if i.element_id == "bad-button" and i.category == "Semantics"]) > 0;

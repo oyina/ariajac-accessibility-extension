@@ -8,8 +8,18 @@ const listeners = { runtime: [], content: [] };
 const button = { disabled: false, addEventListener(_event, callback) { this.onClick = callback; } };
 const status = { textContent: "", dataset: {} };
 const graph = { hidden: true };
-const counters = Object.fromEntries(["page-count", "element-count", "relationship-count", "graph-size"].map((id) => [id, { textContent: "0" }]));
+const auditSection = { hidden: true };
+const auditStatus = { textContent: "" };
 const changes = { textContent: "" };
+const elements = new Map();
+const issueContainer = {
+  children: [], replaceChildren() { this.children = []; },
+  appendChild(item) { this.children.push(item); },
+};
+const counters = Object.fromEntries([
+  "page-count", "element-count", "relationship-count", "graph-size",
+  "count-critical", "count-high", "count-medium", "count-low",
+].map((id) => [id, { textContent: "0" }]));
 const documentStub = {
   title: "AriaJac communication test",
   querySelector(selector) {
@@ -17,8 +27,14 @@ const documentStub = {
     if (selector === "#status") return status;
     if (selector === "#graph") return graph;
     if (selector === "#changes") return changes;
-    const key = selector.slice(1);
-    return counters[key] || null;
+    if (selector === "#audit") return auditSection;
+    if (selector === "#audit-status") return auditStatus;
+    if (selector === "#issues") return issueContainer;
+    if (selector === "#headline") return elements.get(selector) || null;
+    return counters[selector.slice(1)] || null;
+  },
+  createElement(tag) {
+    return { tagName: tag.toUpperCase(), dataset: {}, children: [], addEventListener(_name, cb) { this.onClick = cb; }, append(...items) { this.children.push(...items); } };
   },
 };
 const html = (tag, attrs = {}, children = []) => ({
@@ -41,58 +57,46 @@ const html = (tag, attrs = {}, children = []) => ({
 const docRoot = html("html");
 const main = html("main", { text: "Example" });
 const heading = html("h1", { text: "Example" });
+heading.id = "headline";
 main.children = [heading];
 main.parentElement = docRoot;
 heading.parentElement = main;
+elements.set("#headline", heading);
 const all = [main, heading];
 const documentPage = {
   title: "AriaJac communication test",
   location: { href: "https://example.test/path" },
   documentElement: docRoot,
   querySelectorAll() { return all; },
-  querySelector(selector) { return all.find((item) => `#${item.id}` === selector) || null; },
+  createElement(tag) { return { tagName: tag.toUpperCase(), dataset: {}, children: [], addEventListener(_name, cb) { this.onClick = cb; }, append(...items) { this.children.push(...items); } }; },
+  querySelector(selector) { return elements.get(selector) || null; },
 };
 for (const el of all) el.ownerDocument = documentPage;
 const style = { display: "block", visibility: "visible", color: "rgb(1, 2, 3)", backgroundColor: "rgb(255, 255, 255)", animationName: "none" };
 const sessionValues = new Map();
-const sessionStore = {
-  getItem(key) { return sessionValues.get(key) || null; },
-  setItem(key, value) { sessionValues.set(key, value); },
-};
-const contentChrome = {
-  runtime: { onMessage: { addListener(callback) { listeners.content.push(callback); } } },
-};
+const sessionStore = { getItem(key) { return sessionValues.get(key) || null; }, setItem(key, value) { sessionValues.set(key, value); } };
+const contentChrome = { runtime: { onMessage: { addListener(callback) { listeners.content.push(callback); } } } };
 const workerChrome = {
   runtime: { lastError: null, onMessage: { addListener(callback) { listeners.runtime.push(callback); } } },
   tabs: {
     query: async () => [{ id: 42, url: "https://example.test/path" }],
-    sendMessage(_tabId, message, callback) { listeners.content[0](message, {}, callback); },
+    sendMessage(tabId, message, callback) {
+      assert.equal(tabId, 42);
+      listeners.content[0](message, {}, callback);
+    },
   },
 };
 const context = vm.createContext({
   chrome: workerChrome,
   document: documentPage,
   window: { location: { href: "https://example.test/path" }, getComputedStyle: () => style },
-  location: { href: "https://example.test/path" },
-  getComputedStyle: () => style,
-  URL,
-  Date,
-  setTimeout: () => 1,
-  clearTimeout: () => {},
-  Number,
-  Object,
-  Array,
-  Set,
-  Map,
-  Math,
-  JSON,
-  globalThis: null,
-  module: undefined,
-  console,
+  location: { href: "https://example.test/path" }, getComputedStyle: () => style,
+  URL, Date, setTimeout: () => 1, clearTimeout: () => {}, Number, Object, Array, Set, Map, Math, JSON,
+  globalThis: null, module: undefined, console,
 });
 context.globalThis = context;
 context.sessionStorage = sessionStore;
-documentPage.querySelector = documentStub.querySelector;
+documentPage.querySelector = (selector) => documentStub.querySelector(selector) || elements.get(selector) || null;
 context.importScripts = (...files) => files.forEach((file) => vm.runInContext(fs.readFileSync(path.join(extensionRoot, file), "utf8"), context, { filename: file }));
 context.window = { ...context.window, document: documentPage };
 context.chrome = contentChrome;
@@ -112,16 +116,19 @@ vm.runInContext(fs.readFileSync(path.join(extensionRoot, "popup.js"), "utf8"), c
   await button.onClick();
   assert.equal(status.dataset.state, "success", status.textContent);
   assert.equal(graph.hidden, false);
+  assert.equal(auditSection.hidden, false);
   assert.equal(counters["page-count"].textContent, "1");
   assert.equal(counters["element-count"].textContent, "2");
   assert.equal(counters["relationship-count"].textContent, "2");
   assert.match(changes.textContent, /Changes:/);
   await button.onClick();
-  assert.equal(status.dataset.state, "success", status.textContent);
   assert.equal(changes.textContent, "Changes: +0 added, −0 removed, 0 updated");
-  const highlightResult = await new Promise((resolve) => listeners.content[0]({ type: context.AriaMessage.HIGHLIGHT_TYPE, selector: "#missing" }, {}, resolve));
-  assert.equal(highlightResult.ok, false);
-  console.log("PASS popup → worker → content extraction, repeat-scan diff, and safe highlight lookup");
+  const highlight = await context.chrome.runtime.sendMessage({ type: context.AriaMessage.HIGHLIGHT_TYPE, tabId: 42, selector: "#headline" });
+  assert.equal(highlight.ok, true);
+  assert.equal(heading.style.outline, "3px solid #d12b2b");
+  const missing = await context.chrome.runtime.sendMessage({ type: context.AriaMessage.HIGHLIGHT_TYPE, tabId: 42, selector: "#missing" });
+  assert.equal(missing.ok, false);
+  console.log("PASS extension extraction, repeat-scan diff, local audit response, and element highlighting");
 })().catch((error) => {
   console.error(error);
   process.exitCode = 1;
