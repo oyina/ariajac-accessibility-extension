@@ -53,12 +53,7 @@ node -e "JSON.parse(require('node:fs').readFileSync('extension/manifest.json', '
 5. Open the AriaJac extension popup and choose **Check page
    connection**. The popup should display the page title and URL
    returned by the content script.
-
-The extension needs the `activeTab` permission for the user-invoked
-active-tab query and uses a content script on pages matching
-`<all_urls>`. Chrome may refuse content script execution on restricted
-browser pages; refresh an ordinary page after loading or reloading the
-extension.
+x
 
 ## Build/package
 
