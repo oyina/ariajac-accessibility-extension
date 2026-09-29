@@ -61,6 +61,33 @@
     return (ariaLabel || labelledBy || labelText || el.getAttribute("title") || alt || el.value || text || "").trim().slice(0, MAX_TEXT);
   }
 
+  function channel(value) {
+    const n = value / 255;
+    return n <= 0.04045 ? n / 12.92 : Math.pow((n + 0.055) / 1.055, 2.4);
+  }
+
+  function luminance(color) {
+    const parts = color && color.match(/[\\d.]+/g);
+    if (!parts || parts.length < 3) return null;
+    const rgb = parts.slice(0, 3).map(Number);
+    const linear = rgb.map(channel);
+    return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+  }
+
+  function contrastRatio(foreground, background) {
+    const fg = luminance(foreground), bg = luminance(background);
+    if (fg === null || bg === null) return null;
+    return Math.round(((Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05)) * 100) / 100;
+  }
+
+  function hasFormLabel(el) {
+    if (el.labels && el.labels.length > 0) return true;
+    if (el.getAttribute("aria-label") || el.getAttribute("aria-labelledby")) return true;
+    const id = el.id;
+    if (id && el.ownerDocument.querySelector(`label[for="${CSS.escape(id)}"]`)) return true;
+    return Boolean(el.closest("label"));
+  }
+
   function fingerprint(record) {
     return JSON.stringify({ ...record, bounds: record.bounds && { width: record.bounds.width, height: record.bounds.height } });
   }
@@ -85,15 +112,26 @@
       const alt = el.getAttribute("alt") || "";
       const role = roleOf(el, tag);
       const rect = el.getBoundingClientRect ? el.getBoundingClientRect() : { width: 0, height: 0 };
+      let backgroundColor = style ? style.backgroundColor : null;
+      let ancestor = el.parentElement;
+      while (ancestor && (!backgroundColor || backgroundColor === "rgba(0, 0, 0, 0)" || backgroundColor === "transparent")) {
+        const ancestorStyle = winRef.getComputedStyle ? winRef.getComputedStyle(ancestor) : null;
+        if (ancestorStyle && ancestorStyle.backgroundColor && ancestorStyle.backgroundColor !== "rgba(0, 0, 0, 0)" && ancestorStyle.backgroundColor !== "transparent") backgroundColor = ancestorStyle.backgroundColor;
+        ancestor = ancestor.parentElement;
+      }
       let parentRelevant = el.parentElement;
       while (parentRelevant && !ids.has(parentRelevant)) parentRelevant = parentRelevant.parentElement;
       const parentId = parentRelevant ? ids.get(parentRelevant) : null;
-      const id = `el-${pathOf(el)}`;
+      const selector = pathOf(el);
+      const id = `el-${selector}`;
       ids.set(el, id);
       records.push({
-        id, tag, role, text, accessibleName: accessibleName(el, role, text, alt),
+        id, selector, tag, role, text, accessibleName: accessibleName(el, role, text, alt),
         alt, href: el.href || null, visible: true,
         interactive: INTERACTIVE.has(tag) || el.hasAttribute("tabindex") || el.getAttribute("contenteditable") === "true",
+        hasFormLabel: ["input", "select", "textarea"].includes(tag) ? hasFormLabel(el) : true,
+        contrastRatio: text && style ? contrastRatio(style.color, backgroundColor) : null,
+        focusStyleReview: INTERACTIVE.has(tag) ? "manual-review-unfocused-scan" : null,
         headingLevel: /^h[1-6]$/.test(tag) ? Number(tag[1]) : null,
         media: tag === "video" || tag === "audio" ? {
           controls: el.hasAttribute("controls"),

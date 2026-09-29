@@ -22,6 +22,14 @@
     .graph span { color: #617068; font-size: 12px; }
     .graph strong { font-variant-numeric: tabular-nums; font-size: 12px; }
     #changes { margin: 10px 0 0; color: #617068; font-size: 11px; }
+    .issues { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto; }
+    .issue { border: 1px solid #e1e7e2; border-radius: 9px; padding: 9px; background: #fff; cursor: pointer; text-align: left; color: inherit; }
+    .issue strong { display: block; font-size: 12px; }
+    .issue small { display: block; margin-top: 3px; color: #617068; font-size: 11px; }
+    .issue[data-severity="high"], .issue[data-severity="critical"] { border-left: 3px solid #b84040; }
+    .issue[data-severity="medium"] { border-left: 3px solid #b17a12; }
+    .issue[data-severity="low"] { border-left: 3px solid #718078; }
+    .issue:focus-visible { outline: 3px solid #86cdb1; outline-offset: 2px; }
   </style>
 </head>
 <body>
@@ -37,6 +45,16 @@
       <span>Graph size</span><strong id="graph-size">0</strong>
     </section>
     <p id="changes"></p>
+    <section id="audit" hidden aria-label="Accessibility findings">
+      <p id="audit-status" role="status" aria-live="polite"></p>
+      <div class="graph" aria-label="Issue severity counts">
+        <span>Critical</span><strong id="count-critical">0</strong>
+        <span>High</span><strong id="count-high">0</strong>
+        <span>Medium</span><strong id="count-medium">0</strong>
+        <span>Low</span><strong id="count-low">0</strong>
+      </div>
+      <div id="issues" class="issues"></div>
+    </section>
   </main>
   <script src="shared/message-contract.js"></script>
   <script src="shared/dom-snapshot.js"></script>

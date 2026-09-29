@@ -13,6 +13,8 @@ node Element {
     has media_controls: bool = False;
     has media_autoplay: bool = False;
     has media_muted: bool = False;
+    has contrast_ratio: float = 0.0;
+    has has_form_label: bool = False;
     has text: str = "";
     has accessible_name: str = "";
     has alt: str = "";

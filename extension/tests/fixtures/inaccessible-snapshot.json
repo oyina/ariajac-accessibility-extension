@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "snapshotId": "intentionally-inaccessible-v1",
+  "page": {
+    "id": "page-https://example.test/inaccessible",
+    "title": "Sample page for deterministic audit",
+    "url": "https://example.test/inaccessible",
+    "role": "page"
+  },
+  "elements": [
+    {"id":"el-main","tag":"main","role":"main","text":"Poor contrast","accessibleName":"Poor contrast","alt":"","href":null,"visible":true,"interactive":false,"headingLevel":0,"media":null,"hasFormLabel":true,"contrastRatio":2.1,"focusStyleReview":null,"bounds":{"width":500,"height":400},"foreground":"rgb(190,190,190)","background":"rgb(255,255,255)","animation":null,"focusable":false,"parentId":null},
+    {"id":"el-main>h1","tag":"h1","role":"heading","text":"Poor contrast","accessibleName":"Poor contrast","alt":"","href":null,"visible":true,"interactive":false,"headingLevel":1,"media":null,"hasFormLabel":true,"contrastRatio":2.1,"focusStyleReview":null,"bounds":{"width":250,"height":40},"foreground":"rgb(190,190,190)","background":"rgb(255,255,255)","animation":null,"focusable":false,"parentId":"el-main"},
+    {"id":"el-main>img","tag":"img","role":"img","text":"","accessibleName":"","alt":"","href":null,"visible":true,"interactive":false,"headingLevel":0,"media":null,"hasFormLabel":true,"contrastRatio":null,"focusStyleReview":null,"bounds":{"width":80,"height":60},"foreground":"rgb(0,0,0)","background":"rgb(255,255,255)","animation":null,"focusable":false,"parentId":"el-main"},
+    {"id":"el-main>button","tag":"button","role":"button","text":"","accessibleName":"","alt":"","href":null,"visible":true,"interactive":true,"headingLevel":0,"media":null,"hasFormLabel":true,"contrastRatio":null,"focusStyleReview":"manual-review-unfocused-scan","bounds":{"width":18,"height":18},"foreground":"rgb(0,0,0)","background":"rgb(255,255,255)","animation":null,"focusable":true,"parentId":"el-main"},
+    {"id":"el-main>form","tag":"form","role":"form","text":"Email","accessibleName":"Email","alt":"","href":null,"visible":true,"interactive":false,"headingLevel":0,"media":null,"hasFormLabel":true,"contrastRatio":null,"focusStyleReview":null,"bounds":{"width":250,"height":70},"foreground":"rgb(0,0,0)","background":"rgb(255,255,255)","animation":null,"focusable":false,"parentId":"el-main"},
+    {"id":"el-main>form>input","tag":"input","role":"textbox","text":"","accessibleName":"","alt":"","href":null,"visible":true,"interactive":true,"headingLevel":0,"media":null,"hasFormLabel":false,"contrastRatio":null,"focusStyleReview":"manual-review-unfocused-scan","bounds":{"width":180,"height":32},"foreground":"rgb(0,0,0)","background":"rgb(255,255,255)","animation":null,"focusable":true,"parentId":"el-main>form"}
+  ],
+  "relationships": [
+    {"sourceId":"page-https://example.test/inaccessible","targetId":"el-main","kind":"contains"},
+    {"sourceId":"el-main","targetId":"el-main>h1","kind":"contains"},
+    {"sourceId":"el-main","targetId":"el-main>img","kind":"contains"},
+    {"sourceId":"el-main","targetId":"el-main>button","kind":"contains"},
+    {"sourceId":"el-main","targetId":"el-main>form","kind":"contains"},
+    {"sourceId":"el-main>form","targetId":"el-main>form>input","kind":"contains"}
+  ]
+}

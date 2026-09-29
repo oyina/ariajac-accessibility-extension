@@ -24,7 +24,7 @@ const documentStub = {
 const html = (tag, attrs = {}, children = []) => ({
   tagName: tag.toUpperCase(), nodeType: 1, ownerDocument: null, parentElement: null,
   children, innerText: attrs.text || "", textContent: attrs.text || "", value: "",
-  id: attrs.id || "", hidden: false, href: attrs.href || "",
+  id: attrs.id || "", hidden: false, href: attrs.href || "", style: { outline: "", outlineOffset: "" },
   getAttribute(name) { return attrs[name] ?? null; },
   hasAttribute(name) { return Object.hasOwn(attrs, name); },
   getBoundingClientRect() { return { width: 100, height: 30 }; },
@@ -50,6 +50,7 @@ const documentPage = {
   location: { href: "https://example.test/path" },
   documentElement: docRoot,
   querySelectorAll() { return all; },
+  querySelector(selector) { return all.find((item) => `#${item.id}` === selector) || null; },
 };
 for (const el of all) el.ownerDocument = documentPage;
 const style = { display: "block", visibility: "visible", color: "rgb(1, 2, 3)", backgroundColor: "rgb(255, 255, 255)", animationName: "none" };
@@ -76,6 +77,8 @@ const context = vm.createContext({
   getComputedStyle: () => style,
   URL,
   Date,
+  setTimeout: () => 1,
+  clearTimeout: () => {},
   Number,
   Object,
   Array,
@@ -93,7 +96,7 @@ documentPage.querySelector = documentStub.querySelector;
 context.importScripts = (...files) => files.forEach((file) => vm.runInContext(fs.readFileSync(path.join(extensionRoot, file), "utf8"), context, { filename: file }));
 context.window = { ...context.window, document: documentPage };
 context.chrome = contentChrome;
-for (const file of ["shared/message-contract.js", "shared/dom-snapshot.js", "content.js"]) {
+for (const file of ["shared/message-contract.js", "shared/dom-snapshot.js", "shared/audit-engine.js", "content.js"]) {
   vm.runInContext(fs.readFileSync(path.join(extensionRoot, file), "utf8"), context, { filename: file });
 }
 context.chrome = workerChrome;
@@ -116,7 +119,9 @@ vm.runInContext(fs.readFileSync(path.join(extensionRoot, "popup.js"), "utf8"), c
   await button.onClick();
   assert.equal(status.dataset.state, "success", status.textContent);
   assert.equal(changes.textContent, "Changes: +0 added, −0 removed, 0 updated");
-  console.log("PASS popup → worker → content extraction, graph summary, and repeat-scan diff");
+  const highlightResult = await new Promise((resolve) => listeners.content[0]({ type: context.AriaMessage.HIGHLIGHT_TYPE, selector: "#missing" }, {}, resolve));
+  assert.equal(highlightResult.ok, false);
+  console.log("PASS popup → worker → content extraction, repeat-scan diff, and safe highlight lookup");
 })().catch((error) => {
   console.error(error);
   process.exitCode = 1;

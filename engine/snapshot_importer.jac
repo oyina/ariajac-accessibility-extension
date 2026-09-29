@@ -52,6 +52,8 @@ def:pub ingest_snapshot(snapshot: dict) -> GraphUpdate {
                 media_controls=((record["media"] as dict)["controls"] as bool) if record["media"] else False,
                 media_autoplay=((record["media"] as dict)["autoplay"] as bool) if record["media"] else False,
                 media_muted=((record["media"] as dict)["muted"] as bool) if record["media"] else False,
+                contrast_ratio=record["contrastRatio"] as float or 0.0,
+                has_form_label=record["hasFormLabel"] as bool,
                 text=record["text"] as str,
                 accessible_name=record["accessibleName"] as str,
                 alt=record["alt"] as str,
@@ -78,6 +80,8 @@ def:pub ingest_snapshot(snapshot: dict) -> GraphUpdate {
             element.media_controls = ((record["media"] as dict)["controls"] as bool) if record["media"] else False;
             element.media_autoplay = ((record["media"] as dict)["autoplay"] as bool) if record["media"] else False;
             element.media_muted = ((record["media"] as dict)["muted"] as bool) if record["media"] else False;
+            element.contrast_ratio = record["contrastRatio"] as float or 0.0;
+            element.has_form_label = record["hasFormLabel"] as bool;
             element.text = record["text"] as str;
             element.accessible_name = record["accessibleName"] as str;
             element.alt = record["alt"] as str;
