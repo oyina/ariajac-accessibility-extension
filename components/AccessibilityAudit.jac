@@ -2,6 +2,7 @@ import from .ui.card { Card, CardContent, CardDescription, CardHeader, CardTitle
 import from .ui.button { Button }
 import from .ui.badge { Badge }
 import from .ui.progress { Progress }
+import from "@jac/runtime" { Link }
 import from "@hugeicons/react" { HugeiconsIcon }
 import from "@hugeicons/core-free-icons" { CheckmarkCircle01Icon, Alert01Icon, Image01Icon, Cursor01Icon, EyeIcon, SparklesIcon, ArrowRight01Icon }
 
@@ -20,7 +21,10 @@ def:pub AccessibilityAudit() -> JsxElement {
                     <div className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm"><HugeiconsIcon icon={EyeIcon} strokeWidth={2} className="size-5" /></div>
                     <div><div className="text-lg font-semibold tracking-tight">AriaJac</div><div className="text-xs text-muted-foreground">Accessibility assistant</div></div>
                 </a>
-                <div className="flex items-center gap-2 rounded-full border bg-card px-3 py-2 text-sm text-muted-foreground shadow-sm"><span className="size-2 rounded-full bg-emerald-600"></span>Monitoring this page</div>
+                <div className="flex flex-wrap items-center gap-3">
+                    <Link to="/demo" className="rounded-lg border bg-card px-3 py-2 text-sm font-medium shadow-sm hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">Open Demo Lab</Link>
+                    <div className="flex items-center gap-2 rounded-full border bg-card px-3 py-2 text-sm text-muted-foreground shadow-sm"><span className="size-2 rounded-full bg-emerald-600"></span>Monitoring this page</div>
+                </div>
             </header>
 
             <section className="flex flex-wrap items-end justify-between gap-5">

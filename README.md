@@ -75,6 +75,27 @@ Check Jac modules:
 jac check main.jac engine/main.jac engine/snapshot_importer.jac engine/accessibility_audit.jac engine/walkers.jac
 ```
 
+## Demo Lab
+
+The existing dashboard links to the Demo Lab at `/demo`. The page keeps
+its scenario selector and status panel accessible, while the selected
+sample website content changes in the DOM. Scenario instrumentation uses
+`data-ariajac-demo` markers only for stable testing; the audit logic does
+not inspect these markers or fabricate findings.
+
+The six scenarios are Mixed, Low Vision, Color Vision, Motor, Cognitive,
+and Motion. They include targeted low contrast, missing image alt text,
+color-coded status/chart information, an unlabeled icon-only notification,
+small controls, dense content, recommendations, and a controlled animated
+status banner with a native stop control. Inputs stay explicitly marked as
+read-only demo examples. Only the Motion scenario runs the pulse animation.
+
+Run the Demo Lab regression assertions:
+
+```sh
+node components/tests/demo-lab.test.js
+```
+
 ## Load unpacked in Chrome
 
 1. Open `chrome://extensions` and enable **Developer mode**.

@@ -2,7 +2,8 @@ import from engine.accessibility_audit { AuditResult, ingest_snapshot_and_audit 
 import ".styles.global.css";
 import from "@jac/runtime" { Router, Routes, Route }
 import from .components.AccessibilityAudit { AccessibilityAudit }
+import from .components.DemoLab { DemoLab }
 
 def:pub app() -> JsxElement {
-    return <Router><Routes><Route path="/" element={<AccessibilityAudit />} /></Routes></Router>;
+    return <Router><Routes><Route path="/" element={<AccessibilityAudit />} /><Route path="/demo" element={<DemoLab />} /></Routes></Router>;
 }
