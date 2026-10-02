@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "A lightweight shell for AriaJac webpage communication.",
   "permissions": ["activeTab"],
-  "host_permissions": ["https://preview-jac-sbx-49b6bda7e2764429b49a9e64f1df0715.jachammer.app/*"],
+  "host_permissions": ["<all_urls>", "https://preview-jac-sbx-49b6bda7e2764429b49a9e64f1df0715.jachammer.app/*"],
   "background": {
     "service_worker": "background.js"
   },

@@ -77,12 +77,13 @@ const all = [main, heading];
 const documentPage = {
   title: "AriaJac communication test",
   location: { href: "https://example.test/path" },
-  documentElement: docRoot,
+  documentElement: { classList: { add() {}, remove() {}, contains() { return false; } }, appendChild(node) { this.injected = node; } },
   querySelectorAll() { return all; },
-  createElement(tag) { return { tagName: tag.toUpperCase(), id: "", textContent: "", classList: { add() {}, remove() {}, contains() { return false; } } }; },
+  createElement(tag) {
+    return { tagName: tag.toUpperCase(), id: "", textContent: "", style: { cssText: "" }, classList: { add() {}, remove() {}, contains() { return false; } }, setAttribute() {} };
+  },
   querySelector(selector) { return elements.get(selector) || null; },
   head: { appendChild() {} },
-  documentElement: { classList: { add() {}, remove() {}, contains() { return false; } } },
   getElementById() { return null; },
 };
 for (const el of all) el.ownerDocument = documentPage;
@@ -139,7 +140,7 @@ vm.runInContext(fs.readFileSync(path.join(extensionRoot, "popup.js"), "utf8"), c
   assert.equal(changes.textContent, "Changes: +0 added, −0 removed, 0 updated");
   const highlight = await context.chrome.runtime.sendMessage({ type: context.AriaMessage.HIGHLIGHT_TYPE, tabId: 42, selector: "#headline" });
   assert.equal(highlight.ok, true);
-  assert.equal(heading.style.outline, "3px solid #d12b2b");
+  assert.equal(heading.style.outline, "3px solid #b42318");
   const missing = await context.chrome.runtime.sendMessage({ type: context.AriaMessage.HIGHLIGHT_TYPE, tabId: 42, selector: "#missing" });
   assert.equal(missing.ok, false);
   const apply = await new Promise((resolve) => listeners.content[0]({ type: "ARIAJAC_APPLY_SAFE_FIXES" }, {}, resolve));

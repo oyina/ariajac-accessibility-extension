@@ -46,8 +46,9 @@ and the popup displays that fallback state. No credentials are sent.
 The deployed API currently responds with
 `Access-Control-Allow-Origin: *`. This is Jac's documented behavior for a
 single-process server; this project does not set a wildcard header itself.
-The extension host permission is restricted to the specific deployed
-hostname. The POST is credential-free.
+The extension's content script runs on supported webpages through its
+`<all_urls>` host grant; the API host remains separately listed for the
+credential-free POST.
 
 ## Local development and checks
 
@@ -106,14 +107,17 @@ by the scanner.
 
 1. Open `chrome://extensions` and enable **Developer mode**.
 2. Choose **Load unpacked** and select this project's `extension/`
-   directory.
-3. Open an ordinary webpage and reload the extension after code changes.
-4. Open the AriaJac popup. It scans automatically and displays findings,
-   severity counts, the detection source, and element references.
-5. Select a finding to scroll to and temporarily outline its element.
-6. Use **Apply Safe Fixes** for the supported temporary CSS overrides;
-   **Undo Last Fix** and **Undo All Fixes** restore prior marker state.
-7. **Enable Focus Mode** only hides regions explicitly marked
+   directory. Approve its webpage access when Chrome prompts.
+3. Open an ordinary webpage. The floating **AriaJac** tab appears near the
+   right edge; click it and choose **Run Audit**. Use a finding's **Highlight**
+   button to scroll to and temporarily outline its element. Drag the panel
+   header vertically to reposition it, or press Escape to collapse it.
+4. The Jac connection status identifies deployed-backend results or the
+   deterministic local fallback. No-finding/error states are shown explicitly.
+   The toolbar popup remains available as a secondary access point.
+5. Use **Fix Safe Issues** for supported temporary CSS overrides; the existing
+   popup still provides the undo controls. Focus Mode is a conservative option:
+   it only hides regions explicitly marked
    `data-ariajac-decorative="true"` or
    `data-ariajac-unrelated="true"`; regions containing controls or main
    content are skipped.

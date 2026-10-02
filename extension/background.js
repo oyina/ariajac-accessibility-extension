@@ -4,25 +4,26 @@ importScripts("shared/message-contract.js", "shared/dom-snapshot.js", "shared/au
   const { MESSAGE_TYPE, ERROR_TYPE } = globalThis.AriaMessage;
   const JAC_ENDPOINT = globalThis.AriaApiConfig.baseUrl + globalThis.AriaApiConfig.auditPath;
 
-  chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (!message) return false;
+    const tabId = Number.isInteger(message.tabId) ? message.tabId : sender?.tab?.id;
     if (["ARIAJAC_HIGHLIGHT", "ARIAJAC_APPLY_SAFE_FIXES", "ARIAJAC_UNDO_LAST", "ARIAJAC_UNDO_ALL", "ARIAJAC_FOCUS_MODE"].includes(message.type)) {
-      if (!Number.isInteger(message.tabId)) {
+      if (!Number.isInteger(tabId)) {
         sendResponse({ ok: false, error: "No active webpage is available." });
         return false;
       }
-      chrome.tabs.sendMessage(message.tabId, message, (result) => {
+      chrome.tabs.sendMessage(tabId, message, (result) => {
         const lastError = chrome.runtime.lastError;
         sendResponse(lastError ? { ok: false, error: "Refresh the page and retry the highlight." } : result);
       });
       return true;
     }
     if (message.type !== MESSAGE_TYPE) return false;
-    if (!Number.isInteger(message.tabId)) {
+    if (!Number.isInteger(tabId)) {
       sendResponse({ type: ERROR_TYPE, ok: false, error: "No active webpage is available." });
       return false;
     }
-    chrome.tabs.sendMessage(message.tabId, { type: MESSAGE_TYPE }, async (response) => {
+    chrome.tabs.sendMessage(tabId, { type: MESSAGE_TYPE }, async (response) => {
       if (chrome.runtime.lastError) {
         sendResponse({ type: ERROR_TYPE, ok: false, error: "No page snapshot received. Refresh the page and try again." });
         return;
