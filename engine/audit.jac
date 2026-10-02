@@ -23,6 +23,7 @@ node AccessibilityIssue {
     has wcag_reference: str = "";
     has detected_by: str = "deterministic";
     has can_auto_fix: bool = False;
+    has transformation_type: str = "";
 }
 
 node Transformation {

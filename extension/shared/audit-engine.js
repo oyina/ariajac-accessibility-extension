@@ -16,6 +16,11 @@
   }
 
   function auditSnapshot(snapshot) {
+    const markFixability = (issue) => {
+      const type = String(issue.id || "").split(":")[0];
+      const safe = issue.detected_by !== "manual-review" && (type === "target" || (type === "contrast" && Number(issue.contrast_ratio ?? issue.contrastRatio ?? 0) > 0) || (type === "motion" && issue.detected_by === "deterministic"));
+      return { ...issue, can_auto_fix: safe, transformation_type: safe ? ({ target: "increase_target", contrast: "set_text_color", motion: "pause_animation" })[type] : null };
+    };
     const issues = [];
     const elements = snapshot.elements || [];
     const byId = new Map(elements.map((element) => [element.id, element]));
@@ -35,7 +40,7 @@
         issues.push(makeIssue("contrast", element, "Visual", "high", `Measured text contrast is ${element.contrastRatio}:1, below 4.5:1. Verify text size and context before changing colors.`, "Potential accessibility barrier — WCAG 2.2 SC 1.4.3"));
       }
       if (element.animation) {
-        issues.push(makeIssue("motion", element, "Visual", "low", "Animation metadata is present. Review behavior with reduced-motion preferences enabled.", "Manual review: motion behavior", "manual-review"));
+        issues.push(makeIssue("motion", element, "Visual", "low", "Animation detected. A temporary pause is available; review the page context before applying it.", "Motion review: user-selected temporary pause"));
       }
       if (element.interactive && (element.bounds.width < 24 || element.bounds.height < 24)) {
         issues.push(makeIssue("target", element, "Motor", "medium", "Interactive target is smaller than 24 by 24 CSS pixels. Check spacing exceptions and actual pointer target.", "Potential accessibility barrier — WCAG 2.2 SC 2.5.8"));
@@ -65,6 +70,11 @@
       }
     }
 
+    const classifiedIssues = issues.map((issue) => {
+      const element = byId.get(issue.element_id);
+      return markFixability({ ...issue, contrast_ratio: element?.contrastRatio });
+    });
+    issues.splice(0, issues.length, ...classifiedIssues);
     const severity = { critical: 0, high: 0, medium: 0, low: 0 };
     for (const issue of issues) severity[issue.severity]++;
     return { page: snapshot.page, issues, severity, issueCount: issues.length };

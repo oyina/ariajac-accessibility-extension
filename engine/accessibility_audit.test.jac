@@ -8,7 +8,7 @@ test "graph-backed deterministic checks return fixture issues" {
     root ++> page;
     image = Element(element_id="fixture-image", page_url=test_url, tag="img", alt="", accessible_name="");
     button = Element(element_id="fixture-button", page_url=test_url, tag="button", interactive=True, accessible_name="", width=18, height=18, focusable=True);
-    text = Element(element_id="fixture-text", page_url=test_url, tag="p", text="Low contrast", contrast_ratio=2.1);
+    text = Element(element_id="fixture-text", page_url=test_url, tag="p", text="Low contrast", contrast_ratio=2.1, animation="pulse");
     root ++> [image, button, text];
     page +>:HasElement:+> image;
     page +>:HasElement:+> button;
@@ -30,4 +30,20 @@ test "graph-backed deterministic checks return fixture issues" {
     assert contrast_issue.element_id == "fixture-text";
     assert motor.reports;
     assert visual.reports;
+    target_safe = False;
+    focus_review = False;
+    for issue in motor.reports[0] {
+        if issue.issue_id == "target:fixture-button" { target_safe = issue.can_auto_fix and issue.transformation_type == "increase_target"; }
+        if issue.issue_id == "focus-style:fixture-button" { focus_review = not issue.can_auto_fix and issue.detected_by == "manual-review"; }
+    }
+    contrast_safe = False;
+    motion_safe = False;
+    for issue in visual.reports[0] {
+        if issue.issue_id == "contrast:fixture-text" { contrast_safe = issue.can_auto_fix and issue.transformation_type == "set_text_color"; }
+        if issue.issue_id == "motion:fixture-text" { motion_safe = issue.can_auto_fix and issue.transformation_type == "pause_animation" and issue.detected_by == "deterministic"; }
+    }
+    assert target_safe;
+    assert focus_review;
+    assert contrast_safe;
+    assert motion_safe;
 }

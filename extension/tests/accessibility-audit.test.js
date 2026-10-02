@@ -12,6 +12,9 @@ assert.ok(byElement("el-main>button").some((issue) => issue.id.startsWith("targe
 assert.ok(byElement("el-main>h1").some((issue) => issue.id.startsWith("contrast:")), "contrast finding references text node");
 assert.ok(result.issueCount >= 4);
 assert.ok(result.severity.high >= 2);
-assert.ok(result.issues.every((issue) => issue.id && issue.element_id && issue.wcag_reference && issue.detected_by && issue.can_auto_fix === false));
-assert.ok(result.issues.some((issue) => issue.detected_by === "manual-review"));
+assert.ok(result.issues.every((issue) => issue.id && issue.element_id && issue.wcag_reference && issue.detected_by && typeof issue.can_auto_fix === "boolean"));
+assert.ok(result.issues.some((issue) => issue.id.startsWith("target:") && issue.can_auto_fix && issue.transformation_type === "increase_target"));
+assert.ok(result.issues.some((issue) => issue.id.startsWith("contrast:") && issue.can_auto_fix && issue.transformation_type === "set_text_color"));
+assert.ok(result.issues.some((issue) => issue.id.startsWith("name:") && !issue.can_auto_fix));
+assert.ok(result.issues.some((issue) => issue.detected_by === "manual-review" && !issue.can_auto_fix));
 console.log(`PASS deterministic audit: ${result.issueCount} findings across ${Object.keys(result.severity).join(", ")}`);

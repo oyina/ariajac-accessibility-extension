@@ -68,6 +68,9 @@ Run deterministic extension tests with Node.js:
 node extension/tests/accessibility-audit.test.js
 node extension/tests/dom-snapshot.test.js
 node extension/tests/message-flow.test.js
+node extension/tests/transformation.test.js
+node extension/tests/transformations.test.js
+node extension/tests/in-page-assistant.test.js
 ```
 
 Check Jac modules:
@@ -115,20 +118,19 @@ by the scanner.
 4. The Jac connection status identifies deployed-backend results or the
    deterministic local fallback. No-finding/error states are shown explicitly.
    The toolbar popup remains available as a secondary access point.
-5. Use **Fix Safe Issues** for supported temporary CSS overrides; the existing
-   popup still provides the undo controls. Focus Mode is a conservative option:
-   it only hides regions explicitly marked
-   `data-ariajac-decorative="true"` or
-   `data-ariajac-unrelated="true"`; regions containing controls or main
-   content are skipped.
+5. Use each finding's **Fix** and **Undo** action, or **Fix Safe Issues** for
+   all currently classified repairs. **Undo Last** and **Undo All** restore
+   session-only changes. Use **Re-scan** to check whether the deterministic
+   issue is no longer detected. Focus Mode remains a separate conservative
+   option and skips regions containing controls or main content.
 
-Safe fixes apply extension-owned classes and `data-ariajac-repair`
-attributes for measured low contrast, small interactive targets, animation
-metadata, and keyboard focus outline. The page's original inline styles and
-content are not overwritten; overrides live in an injected stylesheet and
-can be undone by removing the extension-owned attributes. Focus Mode is
-manual and conservative; it does not infer that arbitrary sidebars are
-unrelated.
+Sprint 3 repairs are limited to identified small targets and low-contrast
+findings with a measured contrast ratio. Repairs temporarily set minimum
+interaction dimensions or black-on-white text colors, which exceed the 4.5:1
+contrast threshold. Original inline values are recorded and restored on undo.
+Ambiguous semantic findings, visible-focus findings, and motion findings still
+marked manual-review are labeled **REVIEW REQUIRED** and are never auto-fixed.
+No backend-provided script or arbitrary CSS is executed.
 
 The extractor limits snapshots to 350 visible matching elements and
 bounds text per element. It records selected accessibility properties,

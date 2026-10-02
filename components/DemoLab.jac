@@ -42,7 +42,7 @@ def:pub DemoLab() -> JsxElement {
     status_copy = "Approved" if scenario_id != "color-vision" else "Ready";
     review_copy = "Rejected" if scenario_id != "color-vision" else "Needs review";
     update_class = "rounded-xl border p-4 text-sm leading-snug" if scenario_id == "cognitive" else "rounded-xl border p-4";
-    motion_banner_class = "mt-4 flex items-center gap-3 rounded-lg border bg-muted/40 p-3 animate-pulse" if scenario_id == "motion" else "mt-4 flex items-center gap-3 rounded-lg border bg-muted/40 p-3";
+    motion_banner_class = "mt-4 flex items-center gap-3 rounded-lg border bg-muted/40 p-3 animate-pulse" if scenario_id == "motion" or scenario_id == "mixed" else "mt-4 flex items-center gap-3 rounded-lg border bg-muted/40 p-3";
     target_demo = "small-low-contrast-target" if scenario_id == "mixed" or scenario_id == "low-vision" or scenario_id == "motor" else "primary-action";
     target_class = "rounded-lg font-semibold min-h-6 px-1 text-xs bg-indigo-100 text-indigo-200" if scenario_id == "mixed" or scenario_id == "low-vision" or scenario_id == "motor" else "rounded-lg font-semibold min-h-11 px-4 bg-primary text-primary-foreground";
     link_demo = "small-link-target" if scenario_id == "motor" else "report-link";

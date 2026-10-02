@@ -1,4 +1,4 @@
-importScripts("shared/message-contract.js", "shared/dom-snapshot.js", "shared/audit-engine.js", "shared/api-config.js");
+importScripts("shared/message-contract.js", "shared/dom-snapshot.js", "shared/audit-engine.js", "shared/api-config.js");importScripts("shared/message-contract.js", "shared/api-config.js", "shared/audit-engine.js", "shared/transformation-engine.js");
 
 (() => {
   const { MESSAGE_TYPE, ERROR_TYPE } = globalThis.AriaMessage;
@@ -7,7 +7,7 @@ importScripts("shared/message-contract.js", "shared/dom-snapshot.js", "shared/au
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (!message) return false;
     const tabId = Number.isInteger(message.tabId) ? message.tabId : sender?.tab?.id;
-    if (["ARIAJAC_HIGHLIGHT", "ARIAJAC_APPLY_SAFE_FIXES", "ARIAJAC_UNDO_LAST", "ARIAJAC_UNDO_ALL", "ARIAJAC_FOCUS_MODE"].includes(message.type)) {
+    if (["ARIAJAC_HIGHLIGHT", "ARIAJAC_APPLY_SAFE_FIXES", "ARIAJAC_FIX_ISSUE", "ARIAJAC_FIX_SAFE_ISSUES", "ARIAJAC_UNDO_TRANSFORMATION", "ARIAJAC_UNDO_LAST", "ARIAJAC_UNDO_ALL", "ARIAJAC_FOCUS_MODE"].includes(message.type)) {
       if (!Number.isInteger(tabId)) {
         sendResponse({ ok: false, error: "No active webpage is available." });
         return false;
@@ -48,13 +48,15 @@ importScripts("shared/message-contract.js", "shared/dom-snapshot.js", "shared/au
         const jacResult = envelope.data?.result || envelope.data || envelope;
         const jacIssues = (jacResult.issues || []).map((issue) => {
           const element = response.snapshot.elements.find((item) => item.id === issue.element_id);
-          return {
+          const normalized = {
             ...issue,
             id: issue.issue_id,
             selector: element?.selector || null,
             element_name: element?.accessibleName || element?.tag || issue.element_id,
-            potential_fix: "Review this element on the webpage; no automatic repair is applied.",
+            contrast_ratio: element?.contrastRatio,
           };
+          const classified = globalThis.AriaTransform.classifyIssue(normalized);
+          return { ...normalized, can_auto_fix: classified.canAutoFix, transformation_type: classified.transformationType, potential_fix: classified.canAutoFix ? "A deterministic temporary repair is available and can be undone." : "Review this finding in page context; no automatic repair is available." };
         });
         const severity = {
           critical: jacResult.critical || 0,
