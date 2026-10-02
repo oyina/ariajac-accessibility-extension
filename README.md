@@ -96,6 +96,12 @@ Run the Demo Lab regression assertions:
 node components/tests/demo-lab.test.js
 ```
 
+For a hackathon walkthrough, open `/demo`, select Mixed, audit with the
+Chrome extension, then try Color Vision and Cognitive. The page displays
+sample barrier counts only; it does not present those counts as audit
+findings. The scenario marker attributes are test hooks and are not read
+by the scanner.
+
 ## Load unpacked in Chrome
 
 1. Open `chrome://extensions` and enable **Developer mode**.
